@@ -1,15 +1,15 @@
 #include "stdafx.h"
-#include "SendFunctions.cpp"
+#include "SendFunctions.h"
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	WSADATA wsa = { 0 };
 	if (::WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-		Send::ErrorHandler("Winsock Initialisation Failed.");
+		ErrorHandler("Winsock Initialisation Failed.");
 
 	SOCKET hSocket = ::socket(AF_INET, SOCK_STREAM, 0);
 	if (hSocket == INVALID_SOCKET)
-		Send::ErrorHandler("Listening Socket Creating Failed.");
+		ErrorHandler("Listening Socket Creating Failed.");
 
 	// Port binding
 	SOCKADDR_IN	svraddr = { 0 };
@@ -18,11 +18,11 @@ int _tmain(int argc, _TCHAR* argv[])
 	svraddr.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 	if (::bind(hSocket,
 		(SOCKADDR*)&svraddr, sizeof(svraddr)) == SOCKET_ERROR)
-		Send::ErrorHandler("Failed to Bind IP Address and Port Number to Socket.");
+		ErrorHandler("Failed to Bind IP Address and Port Number to Socket.");
 
 	// Listen
 	if (::listen(hSocket, SOMAXCONN) == SOCKET_ERROR)
-		Send::ErrorHandler("Failed to Change State to Listen.");
+		ErrorHandler("Failed to Change State to Listen.");
 	puts("Game Server on Service.");
 
 	// Accept client connection and create new communication socket
@@ -31,10 +31,10 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	SOCKET hClient = ::accept(hSocket, (SOCKADDR*)&clientaddr, &nAddrLen);
 	if (hClient == INVALID_SOCKET)
-		Send::ErrorHandler("Creating Client Communication Socket Failed.");
+		ErrorHandler("Creating Client Communication Socket Failed.");
 	puts("Client Connected.");
 
-	Send::AcceptConnection(hClient);
+	AcceptConnection(hClient);
 
 	// Event loop to receive packet, process data and response to client
 	PACKET packet;
@@ -45,7 +45,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		
 
 		default:
-			Send::ErrorHandler("알 수 없는 명령을 수신했습니다.");
+			ErrorHandler("알 수 없는 명령을 수신했습니다.");
 			break;
 		}
 	}
