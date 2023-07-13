@@ -42,8 +42,8 @@ void ShowMode(SOCKET hClient, int flag) // flag
 	{
 		op.opcode = S_SEND_SHOW_SCORE_MODE;
 	}
-	op.data = FIFTEEN;
-	op.data += TWENTY;
+	op.data = NORMAL;
+	op.data += LARGE;
 	send(hClient, (const char*)&op, sizeof(op), 0);
 }
 

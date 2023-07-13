@@ -40,13 +40,16 @@ int _tmain(int argc, _TCHAR* argv[])
 	PACKET packet;
 	while (::recv(hClient, (char*)&packet, sizeof(PACKET), 0) > 0)
 	{
+		// recv thread
+		// send thread
+		// pingpong thread
 		switch (packet.opcode)
 		{
-		
+			case 
 
-		default:
-			ErrorHandler("알 수 없는 명령을 수신했습니다.");
-			break;
+			default:
+				ErrorHandler("알 수 없는 명령을 수신했습니다.");
+				break;
 		}
 	}
 
