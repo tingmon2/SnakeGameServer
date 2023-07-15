@@ -1,6 +1,74 @@
 #include "stdafx.h"
 #include "SendFunctions.h"
 
+std::string userName;
+
+DWORD WINAPI ThreadFunction(LPVOID pParam)
+{
+	SOCKET hClient = (SOCKET)pParam;
+	PACKET packet;
+	packet.opcode = 0;
+	packet.data = "";
+	while (::recv(hClient, (char*)&packet, sizeof(PACKET), 0) > 0)
+	{
+		if (packet.opcode < 700)
+		{
+			switch (packet.opcode)
+			{
+			case S_RECV_ERROR:
+				ErrorHandler("UNKOWN ERROR");
+				break;
+			case S_RECV_PONG:
+				break;
+			case S_RECV_EXIT:
+				puts("Client disconnected.");
+				fflush(stdout);
+				Sleep(100);
+				::shutdown(hClient, SD_BOTH);
+				::closesocket(hClient);
+				Sleep(1000);
+				return 0;
+				break;
+			case S_RECV_USER_NAME_INFO:
+				userName = packet.data;
+				break;
+			case S_RECV_MAIN_MENU_SELECT:
+				break;
+			case S_RECV_GAME_MODE_SELECT:
+				break;
+			case S_RECV_SCORE_MODE_SELECT:
+				break;
+			case S_RECV_GAME_START_REQ:
+				GameStart(hClient);
+				break;
+			case S_RECV_TURN_RIGHT:
+				break;
+			case S_RECV_TURN_LEFT:
+				break;
+			case S_RECV_TURN_UP:
+				break;
+			case S_RECV_TURN_DOWN:
+				break;
+			case S_RECV_NEW_TAIL_REQUEST:
+				break;
+			default:
+				//ErrorHandler("ERROR: OPCODE INVALID");
+				break;
+			}
+		}
+
+	}
+
+	// 4-4. receive disconnection request from client
+	puts("Client disconnected.");
+	fflush(stdout);
+	Sleep(100);
+	::shutdown(hClient, SD_BOTH);
+	::closesocket(hClient);
+	Sleep(1000);
+	return 0;
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	WSADATA wsa = { 0 };
@@ -28,30 +96,29 @@ int _tmain(int argc, _TCHAR* argv[])
 	// Accept client connection and create new communication socket
 	SOCKADDR_IN clientaddr = { 0 };
 	int nAddrLen = sizeof(clientaddr);
+	SOCKET hClient;
+	DWORD dwThreadID = 0;
+	HANDLE hThread;
 
-	SOCKET hClient = ::accept(hSocket, (SOCKADDR*)&clientaddr, &nAddrLen);
-	if (hClient == INVALID_SOCKET)
-		ErrorHandler("Creating Client Communication Socket Failed.");
-	puts("Client Connected.");
-
-	AcceptConnection(hClient);
-
-	// Event loop to receive packet, process data and response to client
-	PACKET packet;
-	while (::recv(hClient, (char*)&packet, sizeof(PACKET), 0) > 0)
+	while ((hClient = ::accept(hSocket, (SOCKADDR*)&clientaddr, &nAddrLen)) != INVALID_SOCKET)
 	{
-		// recv thread
-		// send thread
-		// pingpong thread
-		switch (packet.opcode)
-		{
-			case 
+		AcceptConnection(hClient);
 
-			default:
-				ErrorHandler("알 수 없는 명령을 수신했습니다.");
-				break;
-		}
+		puts("New client has been connected.");
+		fflush(stdout);
+
+		// create thread once new client is accepted
+		hThread = ::CreateThread(
+			NULL, // inherit security authority
+			0, // defualt stack size
+			ThreadFunction, // your thread function 
+			(LPVOID)hClient, // thread function parameter
+			0, // default flag
+			&dwThreadID); // thread ID storing address
+		::CloseHandle(hThread);
 	}
+	
+
 
 	// client disconnect server
 	::closesocket(hClient);

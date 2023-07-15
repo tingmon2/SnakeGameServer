@@ -56,7 +56,9 @@ void BackToMain(SOCKET hClient)
 
 void GameStart(SOCKET hClient)
 {
-
+	PACKET op;
+	op.opcode = S_SEND_GAME_START; 
+	send(hClient, (const char*)&op, sizeof(op), 0);
 }
 
 
